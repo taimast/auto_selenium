@@ -54,7 +54,8 @@ class ProxyMixin(BaseModel):
         """
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zp:
-            data = yaml.safe_load(Path('../proxy_config.yaml').read_text())
+            file = Path(__file__).parent.parent / 'proxy_config.yaml'
+            data = yaml.safe_load(file.read_text())
 
             zp.writestr("manifest.json", data['manifest_json'])
             zp.writestr("background.js", data['background_js'] % (
