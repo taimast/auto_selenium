@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 class CookieMixin(BaseModel):
     """Миксин для сохранения и загрузки кук"""
     driver: Chrome
-    cookies_file: FilePath
+    cookies_file: FilePath | None
 
     class Config:
         arbitrary_types_allowed = True
