@@ -52,7 +52,7 @@ class BrowserArgs(BaseModel):
 
 
 class BrowserSettings(BaseModel):
-    log_path: FilePath = Field(default=LOG_DIR / "browser.log")
+    log_path: Path = Field(default=LOG_DIR / "browser.log")
     driver_path: FilePath = Field(default_factory=ChromeDriverManager().install, alias="executable_path")
 
     implicit_wait: int = Field(default=10, alias="implicitly_wait")
