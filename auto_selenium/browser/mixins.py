@@ -15,7 +15,8 @@ from selenium.webdriver.chrome.options import Options
 class CookieMixin(BaseModel):
     """Миксин для сохранения и загрузки кук"""
     driver: Chrome
-    cookies: Path | str | list[dict]
+    cookies_file: Path
+    cookies: str | list[dict] | dict = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -29,9 +30,14 @@ class CookieMixin(BaseModel):
         else:
             logger.debug(f"Not have cookies")
 
-    def _load_cookies(self, cookies: list[dict]|dict):
+    def _load_cookies(self, cookies: list[dict] | dict|str):
         if isinstance(cookies, dict):
             cookies = [cookies]
+        elif isinstance(cookies, str):
+            try:
+                self._load_cookies(json.loads(self.cookies))
+            except json.JSONDecodeError:
+                self._load_cookies(SimpleCookie(self.cookies))
 
         for cookie in cookies:
             if cookie.get("sameSite") == "None":
@@ -39,21 +45,15 @@ class CookieMixin(BaseModel):
             self.driver.add_cookie(cookie)
 
     def load_cookies(self):
-        if isinstance(self.cookies, list):
+        if self.cookies_file.exists():
+            logger.debug("Loading cookies")
+            with open(self.cookies_file, "r") as f:
+                cookies: list = json.load(f)
+                self._load_cookies(cookies)
+        elif self.cookies:
             self._load_cookies(self.cookies)
-        elif isinstance(self.cookies, str):
-            try:
-                self._load_cookies(json.loads(self.cookies))
-            except json.JSONDecodeError:
-                self._load_cookies(SimpleCookie(self.cookies))
         else:
-            if self.cookies.exists():
-                logger.debug("Loading cookies")
-                with open(self.cookies, "r") as f:
-                    cookies: list = json.load(f)
-                    self._load_cookies(cookies)
-            else:
-                logger.debug("Cookie file not found")
+            logger.debug("Cookie file not found")
 
 
 class ProxyMixin(BaseModel):
