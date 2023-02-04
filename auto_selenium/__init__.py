@@ -3,7 +3,6 @@ from .browser.mixins import CookieMixin, ProxyMixin
 from .browser.settings import BrowserArgs, BrowserSettings, by
 
 __all__ = (
-    "__version__",
     "Browser",
     "BrowserArgs",
     "BrowserSettings",
