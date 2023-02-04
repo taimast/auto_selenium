@@ -25,7 +25,7 @@ class CookieMixin(BaseModel):
         cookies = self.driver.get_cookies()
         if cookies:
             logger.debug("Saving cookies")
-            with open(self.cookies, "w", encoding="utf-8") as f:
+            with open(self.cookies_file, "w", encoding="utf-8") as f:
                 json.dump(cookies, f, indent=2)
         else:
             logger.debug(f"Not have cookies")
