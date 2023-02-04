@@ -2,11 +2,12 @@ import base64
 import io
 import json
 import zipfile
+from http.cookies import SimpleCookie
 from pathlib import Path
 
 import yaml
 from loguru import logger
-from pydantic import BaseModel, FilePath, AnyUrl
+from pydantic import BaseModel, AnyUrl
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
@@ -14,7 +15,7 @@ from selenium.webdriver.chrome.options import Options
 class CookieMixin(BaseModel):
     """Миксин для сохранения и загрузки кук"""
     driver: Chrome
-    cookies_file: Path
+    cookies: Path | str | list[dict]
 
     class Config:
         arbitrary_types_allowed = True
@@ -23,22 +24,36 @@ class CookieMixin(BaseModel):
         cookies = self.driver.get_cookies()
         if cookies:
             logger.debug("Saving cookies")
-            with open(self.cookies_file, "w", encoding="utf-8") as f:
+            with open(self.cookies, "w", encoding="utf-8") as f:
                 json.dump(cookies, f, indent=2)
         else:
             logger.debug(f"Not have cookies")
 
+    def _load_cookies(self, cookies: list[dict]|dict):
+        if isinstance(cookies, dict):
+            cookies = [cookies]
+
+        for cookie in cookies:
+            if cookie.get("sameSite") == "None":
+                cookie["sameSite"] = 'Lax'
+            self.driver.add_cookie(cookie)
+
     def load_cookies(self):
-        if self.cookies_file.exists():
-            logger.debug("Loading cookies")
-            with open(self.cookies_file, "r") as f:
-                cookies: list = json.load(f)
-                for cookie in cookies:
-                    if cookie.get("sameSite") == "None":
-                        cookie["sameSite"] = 'Lax'
-                    self.driver.add_cookie(cookie)
+        if isinstance(self.cookies, list):
+            self._load_cookies(self.cookies)
+        elif isinstance(self.cookies, str):
+            try:
+                self._load_cookies(json.loads(self.cookies))
+            except json.JSONDecodeError:
+                self._load_cookies(SimpleCookie(self.cookies))
         else:
-            logger.debug("Cookie file not found")
+            if self.cookies.exists():
+                logger.debug("Loading cookies")
+                with open(self.cookies, "r") as f:
+                    cookies: list = json.load(f)
+                    self._load_cookies(cookies)
+            else:
+                logger.debug("Cookie file not found")
 
 
 class ProxyMixin(BaseModel):
