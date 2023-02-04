@@ -34,6 +34,8 @@ class CookieMixin(BaseModel):
             with open(self.cookies_file, "r") as f:
                 cookies: list = json.load(f)
                 for cookie in cookies:
+                    if cookie.get("sameSite") == "None":
+                        cookie["sameSite"] = 'Lax'
                     self.driver.add_cookie(cookie)
         else:
             logger.debug("Cookie file not found")
