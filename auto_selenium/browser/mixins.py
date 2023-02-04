@@ -37,7 +37,8 @@ class CookieMixin(BaseModel):
             try:
                 self._load_cookies(json.loads(self.cookies))
             except json.JSONDecodeError:
-                self._load_cookies(SimpleCookie(self.cookies))
+                simple_cookie = SimpleCookie(self.cookies)
+                self._load_cookies([{'name': k, 'value': v.value} for k, v in simple_cookie.items()])
 
         for cookie in cookies:
             if cookie.get("sameSite") == "None":
