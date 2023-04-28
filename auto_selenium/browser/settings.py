@@ -4,10 +4,6 @@ from pydantic import BaseModel, Field, StrictStr, FilePath
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 
-LOG_DIR = Path(__file__).parent / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-
 class by:
     id = "id"
     xpath = "xpath"
@@ -52,7 +48,7 @@ class BrowserArgs(BaseModel):
 
 
 class BrowserSettings(BaseModel):
-    log_path: Path = Field(default=LOG_DIR / "browser.log")
+    log_path: Path = Field(default="browser.log")
     driver_path: FilePath = Field(default_factory=ChromeDriverManager().install, alias="executable_path")
 
     implicit_wait: int = Field(default=10, alias="implicitly_wait")
