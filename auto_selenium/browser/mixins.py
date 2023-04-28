@@ -60,7 +60,7 @@ class CookieMixin(BaseModel):
 class ProxyMixin(BaseModel):
     """Миксин для установки прокси"""
     options: Options
-    proxy: AnyUrl
+    proxy: AnyUrl|None
 
     class Config:
         arbitrary_types_allowed = True
